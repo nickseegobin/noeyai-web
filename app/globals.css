@@ -1,0 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Nunito', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    background-color: #ECEDF2;
+    color: #111114;
+    min-height: 100dvh;
+  }
+}
+
+@layer utilities {
+  .noey-input {
+    @apply w-full bg-noey-surface rounded-2xl px-5 py-4 text-noey-text placeholder-noey-text-muted text-base font-medium outline-none border-2 border-transparent focus:border-noey-primary transition-colors;
+  }
+  .noey-btn-primary {
+    @apply w-full bg-noey-primary text-white font-bold text-base py-4 rounded-2xl transition-opacity active:opacity-80;
+  }
+  .noey-btn-secondary {
+    @apply w-full bg-noey-surface text-noey-text font-semibold text-base py-4 rounded-2xl transition-opacity active:opacity-80;
+  }
+  .noey-card {
+    @apply bg-noey-surface rounded-3xl p-5;
+  }
+  .page-container {
+    @apply px-5 pb-8 pt-6 min-h-dvh flex flex-col max-w-[430px] mx-auto;
+  }
+}
