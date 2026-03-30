@@ -26,11 +26,8 @@ export default function ProfileSelectPage() {
 
   useEffect(() => {
     if (!authLoading && !user) router.replace("/login");
-  }, [authLoading, user, router]);
-
-  useEffect(() => {
-    if (user) loadChildren();
-  }, [user]);
+    if (!authLoading && user) loadChildren();
+  }, [authLoading]);
 
   async function loadChildren() {
     setLoadingChildren(true);
@@ -39,11 +36,8 @@ export default function ProfileSelectPage() {
       const { data } = await api.get("/children");
       setChildren(data.data.children ?? []);
       setCanAddMore(data.data.can_add_more ?? true);
-    } catch {
-      // ignore
-    } finally {
-      setLoadingChildren(false);
-    }
+    } catch { /* ignore */ }
+    finally { setLoadingChildren(false); }
   }
 
   function startCountdown(secs: number) {
@@ -68,33 +62,20 @@ export default function ProfileSelectPage() {
 
   async function handlePinSubmit() {
     if (pin.length !== 4) return;
-    setVerifying(true);
-    setPinError("");
+    setVerifying(true); setPinError("");
     try {
       await api.post("/auth/pin/verify", { pin });
-      await api.post("/children/deselect");
+      await api.post("/children/deselect").catch(() => {});  //Updated
       setActiveChild(null);
       await refreshUser();
-      setPinOpen(false);
-      setPin("");
+      setPinOpen(false); setPin("");
       router.push("/parent/home");
     } catch (err) {
       const { code, message } = getApiError(err);
-      if (code === "noey_pin_not_set") {
-        setPinOpen(false); setPin("");
-        router.push("/settings/pin/create");
-      } else if (code === "noey_pin_locked") {
-        setPinLocked(true);
-        const m = message.match(/(\d+)\s*second/);
-        startCountdown(m ? parseInt(m[1]) : 900);
-        setPinError(message);
-      } else if (code === "noey_pin_invalid") {
-        const m = message.match(/(\d+)\s*attempt/);
-        setPinError(`Incorrect PIN. ${m ? m[1] : "?"} attempt(s) remaining.`);
-        setPin("");
-      } else {
-        setPinError(message);
-      }
+      if (code === "noey_pin_not_set") { setPinOpen(false); setPin(""); router.push("/settings/pin/create"); }
+      else if (code === "noey_pin_locked") { setPinLocked(true); const m = message.match(/(\d+)\s*second/); startCountdown(m ? parseInt(m[1]) : 900); setPinError(message); }
+      else if (code === "noey_pin_invalid") { const m = message.match(/(\d+)\s*attempt/); setPinError(`Incorrect PIN. ${m ? m[1] : "?"} attempt(s) remaining.`); setPin(""); }
+      else setPinError(message);
     } finally { setVerifying(false); }
   }
 
@@ -107,9 +88,7 @@ export default function ProfileSelectPage() {
       router.push("/child/home");
     } catch (err) {
       alert(getApiError(err).message);
-    } finally {
-      setSwitchingId(null);
-    }
+    } finally { setSwitchingId(null); }
   }
 
   if (authLoading || !user) return null;
@@ -117,9 +96,7 @@ export default function ProfileSelectPage() {
   return (
     <>
       <div className="page-container items-center">
-        <h1 className="font-black text-3xl text-noey-text text-center mb-10">
-          Select Profile
-        </h1>
+        <h1 className="font-black text-3xl text-noey-text text-center mb-10">Select Profile</h1>
 
         {loadingChildren ? (
           <div className="flex-1 flex items-center justify-center">
@@ -127,27 +104,26 @@ export default function ProfileSelectPage() {
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-6 w-full max-w-sm">
-            <button
-              onClick={handleParentTap}
-              className="flex flex-col items-center gap-3 active:scale-95 transition-transform"
-            >
-              <div className="w-28 h-28 rounded-full bg-noey-surface-dark flex items-center justify-center">
-                <span className="font-black text-2xl text-noey-text-muted">
-                  {user.display_name.charAt(0).toUpperCase()}
-                </span>
-              </div>
-              <span className="font-bold text-base text-noey-text">Parent</span>
+            {/* Parent slot — avatar_index from context, no localStorage */}
+            <button onClick={handleParentTap}
+              className="flex flex-col items-center gap-3 active:scale-95 transition-transform">
+              <AvatarCircle
+                avatarIndex={user.avatar_index ?? 1}
+                displayName={user.display_name}
+                size={112}
+                showRing
+                role="parent"
+              />
+              <span className="font-bold text-base text-noey-text">{user.display_name}</span>
             </button>
 
+            {/* Child slots */}
             {children.map((child) => (
-              <button
-                key={child.child_id}
-                onClick={() => handleChildTap(child)}
+              <button key={child.child_id} onClick={() => handleChildTap(child)}
                 disabled={switchingId === child.child_id}
-                className="flex flex-col items-center gap-3 active:scale-95 transition-transform"
-              >
+                className="flex flex-col items-center gap-3 active:scale-95 transition-transform">
                 <div className="relative">
-                  <AvatarCircle avatarIndex={child.avatar_index} displayName={child.display_name} size={112} showRing />
+                  <AvatarCircle avatarIndex={child.avatar_index} displayName={child.display_name} size={112} showRing role="child" />
                   {switchingId === child.child_id && (
                     <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/20">
                       <Spinner />
@@ -158,11 +134,10 @@ export default function ProfileSelectPage() {
               </button>
             ))}
 
+            {/* Add slot */}
             {canAddMore && children.length < 3 && (
-              <button
-                onClick={() => router.push("/register/child?from=settings")}
-                className="flex flex-col items-center gap-3 active:scale-95 transition-transform"
-              >
+              <button onClick={() => { window.location.href = "/parent/children/add"; }}
+                className="flex flex-col items-center gap-3 active:scale-95 transition-transform">
                 <div className="w-28 h-28 rounded-full bg-noey-surface-dark flex items-center justify-center">
                   <div className="w-10 h-10 rounded-full bg-noey-text flex items-center justify-center">
                     <span className="text-white text-2xl font-light leading-none">+</span>
@@ -182,12 +157,8 @@ export default function ProfileSelectPage() {
         </button>
       </div>
 
-      <Modal
-        isOpen={pinOpen}
-        onOpenChange={(open) => { if (!open) { setPinOpen(false); setPin(""); setPinError(""); } }}
-        placement="center"
-        classNames={{ wrapper: "items-center px-5" }}
-      >
+      <Modal isOpen={pinOpen} onOpenChange={(open) => { if (!open) { setPinOpen(false); setPin(""); setPinError(""); } }}
+        placement="center" classNames={{ wrapper: "items-center px-5" }}>
         <ModalContent>
           <ModalHeader className="flex flex-col items-center gap-1 pb-0">
             <h2 className="font-black text-xl text-noey-text">Parent Access</h2>
@@ -205,12 +176,8 @@ export default function ProfileSelectPage() {
               <>
                 <PinInput value={pin} onChange={(v) => { setPin(v); setPinError(""); }} disabled={verifying} error={!!pinError} />
                 {pinError && <p className="text-red-500 text-sm font-medium text-center">{pinError}</p>}
-                <Button
-                  onPress={handlePinSubmit}
-                  isLoading={verifying}
-                  isDisabled={pin.length < 4 || verifying}
-                  className="w-full bg-noey-primary text-white font-bold h-14 rounded-2xl"
-                >
+                <Button onPress={handlePinSubmit} isLoading={verifying} isDisabled={pin.length < 4 || verifying}
+                  className="w-full bg-noey-primary text-white font-bold h-14 rounded-2xl">
                   Confirm
                 </Button>
               </>

@@ -1,8 +1,7 @@
 "use client";
-// /register/child — onboarding flow, no cancel button
+// /parent/children/add — from profile-select, has Cancel button
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import api, { getApiError } from "@/lib/api";
 import AvatarPicker from "@/components/ui/AvatarPicker";
 import Spinner from "@/components/ui/Spinner";
@@ -12,7 +11,7 @@ import { generateNickname, generateUsername } from "@/lib/nickname";
 interface F {
   firstName: string;
   lastName: string;
-  nickname: string;  // Caribbean nickname — used for leaderboard display
+  nickname: string;
   age: string;
   standard: string;
   term: string;
@@ -28,8 +27,7 @@ function generateChildPassword(): string {
   return `C${uuid}Aa1!`;
 }
 
-export default function OnboardingChildSignUp() {
-  const router = useRouter();
+export default function AddChildPage() {
   const [f, setF] = useState<F>({
     firstName: "", lastName: "", nickname: generateNickname(),
     age: "", standard: "std_4", term: "term_1", avatarIndex: 2,
@@ -66,26 +64,31 @@ export default function OnboardingChildSignUp() {
         first_name: f.firstName.trim(),
         last_name: f.lastName.trim(),
         username,
-        nickname: f.nickname,  // Caribbean nickname used on leaderboard
+        nickname: f.nickname,
         password: generateChildPassword(),
         standard: f.standard,
         term: f.standard === "std_5" ? "" : f.term,
         age: f.age ? Number(f.age) : undefined,
         avatar_index: f.avatarIndex,
       });
-      router.push("/profile-select");
+      window.location.href = "/profile-select";
     } catch (err) {
       const { code, message } = getApiError(err);
       if (code === "noey_max_children") setE({ server: "Maximum of 3 children reached." });
       else setE({ server: message });
-    } finally { setLoading(false); }
+      setLoading(false);
+    }
+  }
+
+  function handleCancel() {
+    window.location.href = "/profile-select";
   }
 
   const valid = f.firstName.trim() && f.lastName.trim();
 
   return (
     <div className="page-container">
-      <h1 className="font-black text-3xl text-noey-text text-center mb-2">Child Sign Up</h1>
+      <h1 className="font-black text-3xl text-noey-text text-center mb-2">Add Child</h1>
       <p className="text-noey-text-muted text-sm text-center mb-7">
         Children sign in by selecting their profile.
       </p>
@@ -95,7 +98,6 @@ export default function OnboardingChildSignUp() {
       </div>
 
       <div className="flex flex-col gap-3">
-        {/* Name row */}
         <div className="flex gap-3">
           <div className="flex-1">
             <input type="text" placeholder="First Name" value={f.firstName}
@@ -111,7 +113,7 @@ export default function OnboardingChildSignUp() {
           </div>
         </div>
 
-        {/* Nickname — Caribbean-themed, used on leaderboard */}
+        {/* Nickname */}
         <div>
           <div className="relative">
             <input type="text" placeholder="Leaderboard Nickname" value={f.nickname}
@@ -127,7 +129,6 @@ export default function OnboardingChildSignUp() {
           </p>
         </div>
 
-        {/* Age + Standard */}
         <div className="flex gap-3">
           <div className="flex-1">
             <input type="number" placeholder="Age (optional)" value={f.age}
@@ -158,10 +159,14 @@ export default function OnboardingChildSignUp() {
         )}
       </div>
 
-      <div className="mt-6">
+      <div className="flex flex-col gap-3 mt-6">
         <button onClick={handleSubmit} disabled={!valid || loading}
           className="noey-btn-secondary flex items-center justify-center gap-2 disabled:opacity-40">
           {loading ? <Spinner color="#111114" /> : "Create Profile"}
+        </button>
+        <button onClick={handleCancel} disabled={loading}
+          className="w-full bg-transparent text-noey-text-muted font-semibold text-base py-4 rounded-2xl transition-opacity active:opacity-80">
+          Cancel
         </button>
       </div>
     </div>

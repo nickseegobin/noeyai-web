@@ -22,8 +22,7 @@ module.exports = {
         "noey-gem-light": "#FFF0F4",
       },
       fontFamily: {
-        sans: ["Poppins", "sans-serif"],       // body text everywhere
-        display: ["Playfair Display", "serif"], // headings only
+        sans: ["Nunito", "sans-serif"],
       },
     },
   },

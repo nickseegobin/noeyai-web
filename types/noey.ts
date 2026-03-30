@@ -1,8 +1,12 @@
 // types/noey.ts — NoeyAPI v1.0.0
 
+// NoeyUser — add first_name, last_name, avatar_index for parent
 export interface NoeyUser {
   user_id: number;
   display_name: string;
+  first_name: string;     // ← add
+  last_name: string;      // ← add
+  avatar_index: number;   // ← add (removes localStorage workaround)
   email: string;
   role: "parent" | "child" | "admin";
   active_child_id: number | null;
@@ -10,9 +14,11 @@ export interface NoeyUser {
   children?: ChildProfile[];
 }
 
+// ChildProfile — add nickname
 export interface ChildProfile {
   child_id: number;
   display_name: string;
+  nickname: string;       // ← add this
   standard: string;
   term: string;
   age: number | null;
@@ -46,14 +52,15 @@ export interface ExamCatalogueEntry {
 
 export interface Question {
   question_id: string;
-  question_text: string;
+  question: string;        // ← API returns "question" not "question_text"
   options: Record<string, string>;
   correct_answer?: string;
   tip?: string;
+  explanation?: string;
   meta: {
     topic: string;
     subtopic: string;
-    cognitive_level: "recall" | "application" | "analysis";
+    cognitive_level: "recall" | "application" | "analysis" | "knowledge" | "comprehension";
   };
 }
 
@@ -100,7 +107,7 @@ export interface SubmitAnswer {
   is_correct: boolean;
   topic: string;
   subtopic?: string;
-  cognitive_level: "recall" | "application" | "analysis";
+  cognitive_level: string;
   time_taken_seconds?: number;
 }
 

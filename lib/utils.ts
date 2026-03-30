@@ -37,16 +37,27 @@ export function getScoreColor(percentage: number): string {
   return "#E8396A";
 }
 
-export function getAvatarSrc(avatarIndex: number): string {
-  const idx = Math.max(1, Math.min(5, avatarIndex ?? 1));
-  return `/avatars/avatar-${idx}.png`;
+// Avatar helpers — subfolders: children / parents
+export function getChildAvatarSrc(avatarIndex: number): string {
+  const idx = Math.max(1, Math.min(10, avatarIndex ?? 1));
+  return `/avatars/children/avatar-${idx}.png`;
 }
 
-export const AVATAR_COLORS = ["#E85030", "#E8396A", "#9B59B6", "#E8396A", "#3498DB"];
+export function getParentAvatarSrc(avatarIndex: number): string {
+  const idx = Math.max(1, Math.min(10, avatarIndex ?? 1));
+  return `/avatars/parents/avatar-${idx}.png`;
+}
+
+// Generic — used when role is unknown (falls back to children folder)
+export function getAvatarSrc(avatarIndex: number, role: "child" | "parent" = "child"): string {
+  return role === "parent" ? getParentAvatarSrc(avatarIndex) : getChildAvatarSrc(avatarIndex);
+}
+
+export const AVATAR_COLORS = ["#E85030", "#E8396A", "#9B59B6", "#3498DB", "#2ECC71", "#F39C12", "#1ABC9C", "#E74C3C", "#8E44AD", "#2980B9"];
 
 export function getAvatarColor(avatarIndex: number): string {
-  const idx = Math.max(1, Math.min(5, avatarIndex ?? 1));
-  return AVATAR_COLORS[idx - 1];
+  const idx = Math.max(1, Math.min(10, avatarIndex ?? 1));
+  return AVATAR_COLORS[(idx - 1) % AVATAR_COLORS.length];
 }
 
 export function formatDate(iso: string): string {
