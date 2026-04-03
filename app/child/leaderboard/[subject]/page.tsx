@@ -25,13 +25,30 @@ export default function BoardDetailPage() {
 
   const activeChild = user?.children?.find(c => c.child_id === user?.active_child_id);
 
+  // Calculate block flag before any hooks — don't call useBoard for blocked subjects
+  const STD5_ALLOWED = ['math', 'english'];
+  const isBlocked = !!activeChild &&
+  activeChild.standard === 'std_5' &&
+  !STD5_ALLOWED.includes(subject);
+
+  // useBoard must always be called (rules of hooks) — pass empty string when blocked
+  const { data, loading, error } = useBoard(
+  activeChild?.standard ?? '',
+  activeChild?.term ?? null,
+  isBlocked ? null : subject,  // ← null instead of ''
+  );
+
   if (!activeChild) return null;
 
-  const { data, loading, error } = useBoard(
-    activeChild.standard,
-    activeChild.term ?? null,
-    subject,
-  );
+
+  if (isBlocked) {
+  router.replace('/child/leaderboard');
+  return null;
+  }
+  
+  
+
+  
 
   const subjectDisplay = SUBJECT_SLUG_TO_DISPLAY[subject] ?? subject;
   const subjectColor = getSubjectColor(subject);

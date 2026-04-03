@@ -27,11 +27,12 @@ export default function LeaderboardPage() {
 
   // Build board_key the v2 way — no difficulty segment
   function buildKey(subject: string): string {
-    const std = activeChild.standard;
-    const term = activeChild.term ?? "";
-    const termPart = std === "std_5" ? "" : `_${term}`;
-    return `${std}${termPart}_${subject}`;
-  }
+  if (!activeChild) return '';
+  const std = activeChild.standard;
+  const term = activeChild.term ?? '';
+  const termPart = std === 'std_5' ? '' : `_${term}`;
+  return `${std}${termPart}_${subject}`;
+}
 
   function getRankForSubject(subject: string): number | null {
     const key = buildKey(subject);
@@ -72,72 +73,78 @@ export default function LeaderboardPage() {
               🏆 Your Rankings Today
             </p>
             <div className="flex flex-wrap gap-2">
-              {myBoards.boards.map(b => (
-                <button
-                  key={b.board_key}
-                  onClick={() => router.push(`/child/leaderboard/${b.subject}`)}
-                  className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-xl active:opacity-70"
-                >
-                  <span className="text-white font-bold text-xs">#{b.rank}</span>
-                  <span className="text-white/60 text-xs capitalize">
-                    {b.subject === "social_studies" ? "Social Studies"
-                      : b.subject === "math" ? "Mathematics"
-                      : b.subject === "english" ? "Language Arts"
-                      : "Science"}
-                  </span>
-                </button>
-              ))}
+              {myBoards.boards
+                .filter(b =>
+                  activeChild.standard !== 'std_5' ||
+                  b.subject === 'math' ||
+                  b.subject === 'english'
+                )
+                .map(b => (
+                  <button
+                    key={b.board_key}
+                    onClick={() => router.push(`/child/leaderboard/${b.subject}`)}
+                    className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-xl active:opacity-70"
+                  >
+                    <span className="text-white font-bold text-xs">#{b.rank}</span>
+                    <span className="text-white/60 text-xs capitalize">
+                      {b.subject === 'social_studies' ? 'Social Studies'
+                        : b.subject === 'math' ? 'Mathematics'
+                        : b.subject === 'english' ? 'Language Arts'
+                        : 'Science'}
+                    </span>
+                  </button>
+                ))}
             </div>
           </div>
         )}
 
+       
         {/* 4 subject cards */}
         <div className="grid grid-cols-2 gap-3">
-          {LEADERBOARD_SUBJECTS.map(subject => {
-            const rank = getRankForSubject(subject.slug);
-            const points = getPointsForSubject(subject.slug);
-            const hasRank = rank !== null;
-            const color = getSubjectColor(subject.slug);
+          {LEADERBOARD_SUBJECTS
+            .filter(subject =>
+              activeChild.standard !== 'std_5' ||
+              subject.slug === 'math' ||
+              subject.slug === 'english'
+            )
+            .map(subject => {
+              const rank   = getRankForSubject(subject.slug);
+              const points = getPointsForSubject(subject.slug);
+              const hasRank = rank !== null;
+              const color  = getSubjectColor(subject.slug);
 
-            return (
-              <button
-                key={subject.slug}
-                onClick={() => router.push(`/child/leaderboard/${subject.slug}`)}
-                className="relative bg-noey-surface rounded-3xl p-4 flex flex-col gap-3 hover:bg-noey-surface-dark transition-colors active:scale-[0.97] text-left"
-              >
-                {/* Rank badge — top right when user is on board */}
-                {hasRank && (
-                  <div className="absolute top-3 right-3 bg-noey-gem text-white text-xs font-black px-2 py-0.5 rounded-full">
-                    #{rank}
-                  </div>
-                )}
-
-                {/* Subject icon */}
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center"
-                  style={{ backgroundColor: color + "20" }}>
-                  <span className="text-2xl">{subject.emoji}</span>
-                </div>
-
-                {/* Subject label */}
-                <div>
-                  <p className="font-black text-sm text-noey-text leading-tight">{subject.label}</p>
-                  {hasRank && points !== null ? (
-                    <p className="text-noey-text-muted text-xs font-medium mt-0.5">
-                      {points} pts today
-                    </p>
-                  ) : (
-                    <p className="text-noey-text-muted text-xs font-medium mt-0.5">
-                      Tap to view board
-                    </p>
+              return (
+                <button
+                  key={subject.slug}
+                  onClick={() => router.push(`/child/leaderboard/${subject.slug}`)}
+                  className="relative bg-noey-surface rounded-3xl p-4 flex flex-col gap-3 hover:bg-noey-surface-dark transition-colors active:scale-[0.97] text-left"
+                >
+                  {hasRank && (
+                    <div className="absolute top-3 right-3 bg-noey-gem text-white text-xs font-black px-2 py-0.5 rounded-full">
+                      #{rank}
+                    </div>
                   )}
-                </div>
-
-                {/* Bottom colour strip */}
-                <div className="h-1 rounded-full w-full mt-auto"
-                  style={{ backgroundColor: hasRank ? color : color + "40" }} />
-              </button>
-            );
-          })}
+                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center"
+                    style={{ backgroundColor: color + "20" }}>
+                    <span className="text-2xl">{subject.emoji}</span>
+                  </div>
+                  <div>
+                    <p className="font-black text-sm text-noey-text leading-tight">{subject.label}</p>
+                    {hasRank && points !== null ? (
+                      <p className="text-noey-text-muted text-xs font-medium mt-0.5">
+                        {points} pts today
+                      </p>
+                    ) : (
+                      <p className="text-noey-text-muted text-xs font-medium mt-0.5">
+                        Tap to view board
+                      </p>
+                    )}
+                  </div>
+                  <div className="h-1 rounded-full w-full mt-auto"
+                    style={{ backgroundColor: hasRank ? color : color + "40" }} />
+                </button>
+              );
+            })}
         </div>
 
         <BackButton href="/child/home" />

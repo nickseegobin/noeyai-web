@@ -10,20 +10,23 @@ module.exports = {
   ],
   theme: {
     extend: {
-      colors: {
-        "noey-bg": "#ECEDF2",
-        "noey-surface": "#E2E3E9",
-        "noey-surface-dark": "#D4D5DC",
-        "noey-card-dark": "#3A3A42",
-        "noey-text": "#111114",
-        "noey-text-muted": "#9B9BA8",
-        "noey-primary": "#2B2B33",
-        "noey-gem": "#E8396A",
-        "noey-gem-light": "#FFF0F4",
-      },
+     colors: {
+          "noey-primary":      "#F9695A",
+          "noey-dark":         "#3D2B3D",
+          "noey-bg":           "#FFFDFA",
+          "noey-neutral":      "#F8EFE2",
+          "noey-text":         "#3D2B3D",
+          "noey-text-muted":   "#9B8FA0",
+          "noey-gem":          "#F9695A",
+          // Aliases to keep old code from breaking during migration
+          "noey-surface":      "#F8EFE2",
+          "noey-surface-dark": "#EDE8E0",
+          "noey-card-dark":    "#3D2B3D",
+          "noey-gem-light":    "#FFF0F4",
+        },
       fontFamily: {
-        sans: ["Poppins", "sans-serif"],       // body text everywhere
-        display: ["Playfair Display", "serif"], // headings only
+        sans:    ["Poppins", "sans-serif"],
+        display: ["Playfair Display", "serif"],
       },
     },
   },

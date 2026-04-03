@@ -1,191 +1,26 @@
-"use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import api, { getApiError } from "@/lib/api";
-import { useAuth } from "@/context/AuthContext";
-import AvatarPicker from "@/components/ui/AvatarPicker";
-import Spinner from "@/components/ui/Spinner";
+import { getSliderMessages, getSiteSettings } from '@/lib/wp';
+import HeroPanel from '@/components/ui/HeroPanel';
+import ParentSignUpForm from '@/components/ui/ParentSignUpForm';
 
-interface F {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  password: string;
-  confirmPassword: string;
-  avatarIndex: number;
-}
-interface E {
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  phone?: string;
-  password?: string;
-  confirmPassword?: string;
-  server?: string;
-}
-
-function FE({ msg }: { msg: string }) {
-  return <p className="text-red-500 text-xs font-medium mt-1 ml-2">{msg}</p>;
-}
-
-export default function ParentSignUpPage() {
-  const [f, setF] = useState<F>({
-    firstName: "", lastName: "", email: "",
-    phone: "", password: "", confirmPassword: "", avatarIndex: 1,
-  });
-  const [e, setE] = useState<E>({});
-  const [loading, setLoading] = useState(false);
-  const [showPw, setShowPw] = useState(false);
-  const { login } = useAuth();
-  const router = useRouter();
-
-  function set(k: keyof F, v: string | number) {
-    setF(p => ({ ...p, [k]: v }));
-    setE(p => ({ ...p, [k]: undefined, server: undefined }));
-  }
-
-  function validate(): boolean {
-    const err: E = {};
-    if (!f.firstName.trim()) err.firstName = "First name is required.";
-    if (!f.lastName.trim()) err.lastName = "Last name is required.";
-    if (!f.email.trim()) err.email = "Email is required.";
-    else if (!/\S+@\S+\.\S+/.test(f.email)) err.email = "Invalid email address.";
-    if (f.phone && !/^[+\d\s\-()]{7,15}$/.test(f.phone)) err.phone = "Invalid phone number.";
-    if (!f.password) err.password = "Password is required.";
-    else if (f.password.length < 8) err.password = "Min 8 characters.";
-    if (f.confirmPassword !== f.password) err.confirmPassword = "Passwords do not match.";
-    setE(err);
-    return Object.keys(err).length === 0;
-  }
-
-  async function handleSubmit() {
-    if (!validate()) return;
-    setLoading(true);
-    try {
-      const { data } = await api.post("/auth/register", {
-        first_name:   f.firstName.trim(),
-        last_name:    f.lastName.trim(),
-        email:        f.email.trim(),
-        phone:        f.phone.trim() || undefined,
-        password:     f.password,
-        avatar_index: f.avatarIndex,
-      });
-      const d = data.data;
-
-      login(d.token, {
-        user_id:         d.user_id,
-        display_name:    d.display_name,
-        first_name:      d.first_name,
-        last_name:       d.last_name,
-        avatar_index:    d.avatar_index ?? f.avatarIndex,
-        email:           d.email,
-        role:            d.role,
-        active_child_id: null,
-        token_balance:   null,
-        children:        [],
-      });
-
-      router.push("/register/pin");
-    } catch (err) {
-      const { code, message } = getApiError(err);
-      if (code === "noey_email_taken") setE({ email: "Email already registered." });
-      else setE({ server: message });
-    } finally { setLoading(false); }
-  }
-
-  const valid = f.firstName.trim() && f.lastName.trim() && f.email.trim()
-    && f.password.length >= 8 && f.confirmPassword === f.password;
+export default async function ParentRegisterPage() {
+  const [messages, site] = await Promise.all([
+    getSliderMessages(),
+    getSiteSettings(),
+  ]);
 
   return (
-    <div className="page-container">
-      <h1 className="font-black text-3xl text-noey-text text-center mb-7">Parent Sign Up</h1>
+    <div className="min-h-dvh flex flex-col md:flex-row">
 
-      <div className="flex justify-center mb-7">
-        <AvatarPicker
-          value={f.avatarIndex}
-          onChange={v => set("avatarIndex", v)}
-          role="parent"
-          count={5}
-        />
+      {/* Coral panel — desktop only */}
+      <div className="hidden md:flex md:w-[58%]">
+        <HeroPanel messages={messages} site={site} />
       </div>
 
-      <div className="flex flex-col gap-3">
-        {/* Name row */}
-        <div className="flex gap-3">
-          <div className="flex-1">
-            <input type="text" placeholder="First Name" value={f.firstName}
-              onChange={ev => set("firstName", ev.target.value)} disabled={loading}
-              className={`noey-input ${e.firstName ? "border-red-400" : ""}`}
-              autoComplete="given-name" />
-            {e.firstName && <FE msg={e.firstName} />}
-          </div>
-          <div className="flex-1">
-            <input type="text" placeholder="Last Name" value={f.lastName}
-              onChange={ev => set("lastName", ev.target.value)} disabled={loading}
-              className={`noey-input ${e.lastName ? "border-red-400" : ""}`}
-              autoComplete="family-name" />
-            {e.lastName && <FE msg={e.lastName} />}
-          </div>
-        </div>
-
-        {/* Email — login identifier */}
-        <div>
-          <input type="email" placeholder="Email" value={f.email}
-            onChange={ev => set("email", ev.target.value)} disabled={loading}
-            className={`noey-input ${e.email ? "border-red-400" : ""}`}
-            autoComplete="email" />
-          {e.email && <FE msg={e.email} />}
-        </div>
-
-        {/* Phone — optional */}
-        <div>
-          <input type="tel" placeholder="Phone (optional)" value={f.phone}
-            onChange={ev => set("phone", ev.target.value)} disabled={loading}
-            className={`noey-input ${e.phone ? "border-red-400" : ""}`}
-            autoComplete="tel" />
-          {e.phone && <FE msg={e.phone} />}
-        </div>
-
-        {/* Password */}
-        <div className="relative">
-          <input type={showPw ? "text" : "password"} placeholder="Password"
-            value={f.password} onChange={ev => set("password", ev.target.value)}
-            disabled={loading}
-            className={`noey-input pr-14 ${e.password ? "border-red-400" : ""}`}
-            autoComplete="new-password" />
-          <button type="button" onClick={() => setShowPw(v => !v)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-noey-text-muted text-sm font-semibold">
-            {showPw ? "Hide" : "Show"}
-          </button>
-          {e.password && <FE msg={e.password} />}
-        </div>
-
-        <div>
-          <input type="password" placeholder="Confirm Password" value={f.confirmPassword}
-            onChange={ev => set("confirmPassword", ev.target.value)} disabled={loading}
-            className={`noey-input ${e.confirmPassword ? "border-red-400" : ""}`}
-            autoComplete="new-password" />
-          {e.confirmPassword && <FE msg={e.confirmPassword} />}
-        </div>
-
-        {e.server && (
-          <div className="bg-red-50 border border-red-200 rounded-2xl px-4 py-3">
-            <p className="text-red-600 text-sm font-medium text-center">{e.server}</p>
-          </div>
-        )}
+      {/* Form — full width mobile, right panel desktop */}
+      <div className="flex-1 md:w-[42%] overflow-y-auto">
+        <ParentSignUpForm site={site} />
       </div>
 
-      <div className="flex flex-col gap-3 mt-6">
-        <button onClick={handleSubmit} disabled={!valid || loading}
-          className="noey-btn-primary flex items-center justify-center gap-2 disabled:opacity-50">
-          {loading ? <Spinner /> : "Create Account"}
-        </button>
-        <Link href="/login" className="noey-btn-secondary text-center">
-          Already have an account? Login
-        </Link>
-      </div>
     </div>
   );
 }

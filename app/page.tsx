@@ -1,4 +1,4 @@
-"use client";
+/* "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -60,4 +60,17 @@ function HamIcon() {
       <rect y="13.5" width="22" height="2.5" rx="1.25" fill="#111114" />
     </svg>
   );
+}
+ */
+
+import { getSliderMessages, getSiteSettings } from '@/lib/wp';
+import LandingPage from '@/components/ui/LandingPage';
+
+export default async function Home() {
+  const [messages, site] = await Promise.all([
+    getSliderMessages(),
+    getSiteSettings(),
+  ]);
+
+  return <LandingPage messages={messages} site={site} />;
 }

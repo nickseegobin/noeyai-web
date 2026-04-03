@@ -209,9 +209,9 @@ export const SUBJECTS = ["Mathematics", "Language Arts", "Social Studies", "Scie
 export type Subject = (typeof SUBJECTS)[number];
 
 export const STANDARDS = [
-  { value: "std_1", label: "Standard 1" },
+  /* { value: "std_1", label: "Standard 1" },
   { value: "std_2", label: "Standard 2" },
-  { value: "std_3", label: "Standard 3" },
+  { value: "std_3", label: "Standard 3" }, */
   { value: "std_4", label: "Standard 4" },
   { value: "std_5", label: "Standard 5" },
 ] as const;

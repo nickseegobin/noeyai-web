@@ -1,6 +1,9 @@
 import axios, { AxiosError } from "axios";
 import type { NoeyError } from "@/types/noey";
 
+
+const WP_API = process.env.NEXT_PUBLIC_WP_API;  // e.g. http://noeyai.local/wp-json
+
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE,
   headers: { "Content-Type": "application/json" },
@@ -34,4 +37,22 @@ export function getApiError(err: unknown): NoeyError {
     return err.response.data as NoeyError;
   }
   return { code: "unknown", message: "An unexpected error occurred." };
+}
+
+
+
+export async function getSliderMessages() {
+  const res = await fetch(`${WP_API}/noeyai/v1/messages`, {
+    next: { revalidate: 3600 }, // cache for 1 hour, Next.js ISR
+  });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function getSiteSettings() {
+  const res = await fetch(`${WP_API}/noeyai/v1/site`, {
+    next: { revalidate: 3600 },
+  });
+  if (!res.ok) return {};
+  return res.json();
 }

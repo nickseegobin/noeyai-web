@@ -1,4 +1,11 @@
-import SetPinPage from "@/app/register/pin/page";
+import SetPinForm from '@/components/ui/SetPinForm';
+
 export default function CreatePinPage() {
-  return <SetPinPage successPath="/profile-select" showBack={true} backPath="/profile-select" />;
+  return (
+    <SetPinForm
+      successPath="/profile-select"
+      showBack={true}
+      backPath="/profile-select"
+    />
+  );
 }

@@ -25,7 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <Providers>
-          <main className="max-w-[430px] mx-auto min-h-dvh bg-noey-bg">
+          <main className="min-h-dvh bg-noey-bg">
             {children}
           </main>
         </Providers>

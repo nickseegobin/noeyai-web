@@ -27,22 +27,46 @@ export default function ChildEditPage() {
   const [dirty, setDirty] = useState(false);
 
   useEffect(() => {
-    api.get(`/children/${childId}`).then(({ data }) => {
+  async function load() {
+    try {
+      // Switch to this child first so the endpoint accepts the request
+      await api.post(`/children/${childId}/switch`).catch(() => {});
+      const { data } = await api.get(`/children/${childId}`);
       const c: ChildProfile = data.data;
-      setChild(c); setDisplayName(c.display_name); setStandard(c.standard); setTerm(c.term ?? "term_1"); setAvatarIndex(c.avatar_index);
-    }).catch(() => router.replace("/parent/children")).finally(() => setLoading(false));
-  }, [childId]);
+      setChild(c);
+      setDisplayName(c.display_name);
+      setStandard(c.standard);
+      setTerm(c.term ?? 'term_1');
+      setAvatarIndex(c.avatar_index);
+    } catch {
+      router.replace('/parent/children');
+    } finally {
+      setLoading(false);
+    }
+  }
+  load();
+}, [childId]);
 
   function markDirty() { setDirty(true); setError(""); }
 
   async function handleSave() {
-    setSaving(true); setError("");
-    try {
-      await api.patch(`/children/${childId}`, { display_name: displayName, standard, term: standard === "std_5" ? "" : term, avatar_index: avatarIndex });
-      router.push("/parent/children");
-    } catch (err) { setError(getApiError(err).message); }
-    finally { setSaving(false); }
+  setSaving(true); setError('');
+  try {
+    await api.patch(`/children/${childId}`, {
+      display_name: displayName,
+      standard,
+      term: standard === 'std_5' ? '' : term,
+      avatar_index: avatarIndex,
+    });
+    // Restore parent context — deselect child after editing
+    await api.post('/children/deselect').catch(() => {});
+    router.push('/parent/children');
+  } catch (err) {
+    setError(getApiError(err).message);
+  } finally {
+    setSaving(false);
   }
+}
 
   if (loading) return <div className="flex items-center justify-center min-h-dvh"><Spinner color="#111114" size={28} /></div>;
 

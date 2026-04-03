@@ -1,12 +1,13 @@
 "use client";
 import { useEffect, useRef, KeyboardEvent, ClipboardEvent } from "react";
 
-export default function PinInput({ value, onChange, disabled = false, error = false }: {
-  value: string;
-  onChange: (pin: string) => void;
-  disabled?: boolean;
-  error?: boolean;
-}) {
+  export default function PinInput({ value, onChange, disabled = false, error = false, autoFocus = false }: {
+    value:      string;
+    onChange:   (pin: string) => void;
+    disabled?:  boolean;
+    error?:     boolean;
+    autoFocus?: boolean;
+  }) {
   const refs = [
     useRef<HTMLInputElement>(null),
     useRef<HTMLInputElement>(null),
@@ -16,8 +17,10 @@ export default function PinInput({ value, onChange, disabled = false, error = fa
 
   // Auto-focus the first box on mount
   useEffect(() => {
+  if (autoFocus) {
     setTimeout(() => refs[0].current?.focus(), 100);
-  }, []);
+  }
+}, []);
 
   function handleKeyDown(idx: number, e: KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Backspace") {

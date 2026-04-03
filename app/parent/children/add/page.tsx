@@ -94,7 +94,7 @@ export default function AddChildPage() {
       </p>
 
       <div className="flex justify-center mb-7">
-        <AvatarPicker value={f.avatarIndex} onChange={v => set("avatarIndex", v)} role="child" count={5} />
+        <AvatarPicker value={f.avatarIndex} onChange={v => set("avatarIndex", v)} role="child" count={8} />
       </div>
 
       <div className="flex flex-col gap-3">

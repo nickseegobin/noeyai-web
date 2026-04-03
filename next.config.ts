@@ -1,10 +1,18 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  // Remove the Next.js dev indicator (N icon) in bottom left
-  devIndicators: false,
+const nextConfig = {
   images: {
-    remotePatterns: [{ protocol: "http", hostname: "noeyai.local" }],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'nicks180.sg-host.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'http',
+        hostname: 'noeyai.local',
+        pathname: '/**',
+      },
+    ],
+    unoptimized: process.env.NODE_ENV === 'development',
   },
 };
 

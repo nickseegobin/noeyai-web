@@ -65,7 +65,7 @@ export default function ParentSettingsPage() {
           value={avatarIndex}
           onChange={(v) => { setAvatarIndex(v); setDirty(true); }}
           role="parent"
-          count={5}
+          count={8}
         />
       </div>
 
